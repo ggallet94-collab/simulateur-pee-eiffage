@@ -15,14 +15,14 @@ src/
   components/
     UI.jsx               → composants réutilisables (Field, Slider, KPI, tooltip graphique...)
   App.jsx                → composant principal
-api/
-  cours.js               → fonction serverless Vercel, récupère le cours Eiffage
-                           côté serveur (clé API jamais exposée au navigateur)
 ```
 
 Pour ajouter une autre entreprise plus tard (VINCI, Bouygues...), créer un fichier
 `src/config/vinciConfig.js` sur le même modèle que `eiffageConfig.js`, sans toucher
 au reste du code.
+
+Le cours de l'action est saisi manuellement (champ éditable en haut à droite).
+Aucune dépendance API externe pour le V1 — le déploiement est donc purement statique.
 
 ## Développement local
 
@@ -31,17 +31,15 @@ npm install
 npm run dev
 ```
 
-L'appel au cours en direct (`/api/cours`) ne fonctionne qu'une fois déployé sur Vercel
-(ou via `vercel dev` en local), car il s'agit d'une fonction serverless.
-
 ## Déploiement
 
-1. Créer un projet sur [vercel.com](https://vercel.com), lié à ce repo GitHub
-2. Dans Project Settings > Environment Variables, ajouter `ANTHROPIC_API_KEY`
-   (voir `.env.example`)
-3. Déployer
+Projet 100% statique : n'importe quel hébergeur statique fonctionne (Vercel, Netlify...).
+Sur Vercel : créer un projet lié à ce repo GitHub, aucune configuration supplémentaire
+requise, déployer directement.
 
-## Variables d'environnement
+## Évolution future : cours automatique
 
-Copier `.env.example` en `.env.local` pour le développement local avec `vercel dev`.
-Ne jamais commiter `.env.local` (déjà exclu via `.gitignore`).
+Si besoin d'automatiser la récupération du cours plus tard, préférer une API financière
+dédiée (Alpha Vantage, Twelve Data — gratuites en tier de base) plutôt qu'un LLM avec
+recherche web, plus rapide, plus fiable et sans coût par appel. Prévoir alors une fonction
+serverless (`api/cours.js`) pour garder la clé API côté serveur.

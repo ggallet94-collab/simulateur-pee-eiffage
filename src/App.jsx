@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, ReferenceLine } from "recharts";
 
 import { C } from "./config/theme.js";
@@ -11,8 +11,6 @@ export default function App() {
   const [primes, setPrimes] = useState("5000");
   const salairebrut = String(Math.round(n2(salaireMensuel) * CFG.moisSalaire));
   const [coursActuel, setCoursActuel] = useState("140.50");
-  const [coursLoading, setCoursLoading] = useState(false);
-  const [coursMsg, setCoursMsg] = useState("");
   const [lastUpdated, setLastUpdated] = useState(null);
   const [historique, setHistorique] = useState(CFG.historiqueDefaut);
   const [nextId, setNextId] = useState(CFG.historiqueDefaut.length + 1);
@@ -29,26 +27,6 @@ export default function App() {
     setHistorique((h) => [...h, { id: nextId, year: ny, versement: "0", participation: "0", prixSouscription: "0", perfDiv: "3.7", psRate: CFG.defaultPsRate(ny) }]);
     setNextId((n) => n + 1);
   };
-
-  // Cours récupéré via la fonction serverless /api/cours (clé API côté serveur, jamais exposée au client)
-  const refreshCours = useCallback(async () => {
-    setCoursLoading(true); setCoursMsg("Recherche en cours…");
-    try {
-      const res = await fetch("/api/cours");
-      const data = await res.json();
-      if (data.price) {
-        setCoursActuel(data.price);
-        setLastUpdated(new Date());
-        setCoursMsg(`✓ ${data.price} € · tout mis à jour`);
-      } else {
-        setCoursMsg("Cours introuvable — saisir manuellement.");
-      }
-    } catch (e) {
-      setCoursMsg("Erreur réseau.");
-    }
-    setCoursLoading(false);
-    setTimeout(() => setCoursMsg(""), 5000);
-  }, []);
 
   const cA = n2(coursActuel);
 
@@ -179,8 +157,6 @@ export default function App() {
 
   return (
     <div style={{ background: C.bg, color: C.text, minHeight: "100vh", fontFamily: "system-ui,sans-serif" }}>
-      <style>{`@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}`}</style>
-
       <div style={{ padding: "10px 18px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div style={{ width: 5, height: 24, background: `linear-gradient(${C.goldLight},${C.gold})`, borderRadius: 3 }} />
@@ -199,14 +175,7 @@ export default function App() {
               style={{ background: "transparent", border: "none", outline: "none", padding: "4px 8px", fontSize: 17, color: C.goldLight, fontWeight: 700, width: 64, textAlign: "right" }} />
             <span style={{ paddingRight: 8, color: C.muted, fontSize: 12 }}>€</span>
           </div>
-          <button onClick={refreshCours} disabled={coursLoading}
-            style={{ background: coursLoading ? "#1c2535" : C.gold, border: "none", borderRadius: 7, padding: "6px 13px", fontSize: 12,
-              color: coursLoading ? C.muted : "#111", fontWeight: 600, cursor: coursLoading ? "default" : "pointer",
-              display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap" }}>
-            <span style={{ display: "inline-block", animation: coursLoading ? "spin 1s linear infinite" : "none", fontSize: 14 }}>⟳</span>
-            {coursLoading ? "Recherche…" : "Actualiser tout"}
-          </button>
-          {coursMsg && <div style={{ fontSize: 11, color: C.green, maxWidth: 160 }}>{coursMsg}</div>}
+          <span style={{ fontSize: 10, color: C.muted }}>Saisie manuelle</span>
         </div>
       </div>
 
